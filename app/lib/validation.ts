@@ -7,8 +7,8 @@ export const productSchema = z.object({
   price: z.number().positive("Price must be positive"),
   imageUrl: z.string().url("Must be valid URL").optional(),
   lowStockThreshold: z.number().int().min(1, "Threshold must be at least 1"),
-  categoryId: z.number().int().positive("Category ID is required"),
-  supplierId: z.number().int().positive("Supplier ID is required"),
+  categoryId: z.string().uuid("Category ID must be a valid UUID"),
+  supplierId: z.string().uuid("Supplier ID must be a valid UUID"),
 });
 
 export const categorySchema = z.object({
