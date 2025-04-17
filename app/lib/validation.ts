@@ -19,3 +19,7 @@ export const supplierSchema = z.object({
   name: z.string().min(1, "Name is required"),
   contact: z.string().optional(),
 });
+
+export const deleteSchema = z.object({
+  id: z.number().int().positive("ID is required"),
+});
