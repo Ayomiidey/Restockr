@@ -165,7 +165,7 @@ export async function addCategory(formData: FormData) {
   }
 }
 
-export async function getCategory() {
+export async function getCategories() {
   return await prisma.category.findMany();
 }
 
@@ -185,6 +185,6 @@ export async function addSupplier(formData: FormData) {
   }
 }
 
-export async function getSupplier() {
+export async function getSuppliers() {
   return await prisma.supplier.findMany();
 }
