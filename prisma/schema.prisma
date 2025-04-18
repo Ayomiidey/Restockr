@@ -33,7 +33,7 @@ model Product {
   id                String   @id @default(uuid()) @db.Uuid
   name              String
   sku               String   @unique
-  quantity          Int
+  stock             Int
   price             Float
   imageUrl          String?
   lowStockThreshold Int      @default(10)
