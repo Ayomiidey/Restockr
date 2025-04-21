@@ -10,12 +10,33 @@ import {
 import { revalidatePath } from "next/cache";
 import { put } from "@vercel/blob";
 
-export async function getProducts() {
+// export async function getProducts() {
+//   return await prisma.product.findMany({
+//     include: {
+//       category: true,
+//       supplier: true,
+//     },
+//   });
+// }
+
+export async function getProducts(
+  search?: string,
+  categoryId?: string,
+  supplierId?: string
+) {
   return await prisma.product.findMany({
+    where: {
+      AND: [
+        search ? { name: { contains: search, mode: "insensitive" } } : {},
+        categoryId ? { categoryId } : {},
+        supplierId ? { supplierId } : {},
+      ],
+    },
     include: {
       category: true,
       supplier: true,
     },
+    orderBy: { createdAt: "desc" },
   });
 }
 
@@ -89,7 +110,17 @@ export async function updateProduct(id: string, formData: FormData) {
       lowStockThreshold: Number(formData.get("lowStockThreshold") || 10),
       categoryId: formData.get("categoryId") as string,
       supplierId: formData.get("supplierId") as string,
+      imageUrl: undefined as string | undefined,
     };
+
+    const image = formData.get("image") as File | null;
+    if (image && image.size > 0) {
+      const { url } = await put(image.name, image, {
+        access: "public",
+        token: process.env.BLOB_READ_WRITE_TOKEN,
+      });
+      data.imageUrl = url;
+    }
 
     const result = productSchema.omit({ sku: true }).safeParse(data);
 
@@ -105,6 +136,7 @@ export async function updateProduct(id: string, formData: FormData) {
         name: validated.name,
         stock: validated.stock,
         price: validated.price,
+        imageUrl: validated.imageUrl,
         lowStockThreshold: validated.lowStockThreshold,
         category: { connect: { id: validated.categoryId } },
         supplier: { connect: { id: validated.supplierId } },
@@ -127,7 +159,7 @@ export async function deleteProduct(formData: FormData) {
     revalidatePath("/");
     return { success: true };
   } catch (error) {
-    console.error(error);
+    console.error("Error deleting product:", error);
     return { success: false, error: "Failed to delete product" };
   }
 }
@@ -136,6 +168,7 @@ export async function getLowStock() {
   return await prisma.product.findMany({
     where: { stock: { lte: prisma.product.fields.lowStockThreshold } },
     include: { category: true, supplier: true },
+    orderBy: { stock: "asc" },
   });
 }
 
@@ -145,10 +178,14 @@ export async function getAnalytics() {
   const lowStockCount = await prisma.product.count({
     where: { stock: { lte: prisma.product.fields.lowStockThreshold } },
   });
+  const categoryCount = await prisma.category.count();
+  const supplierCount = await prisma.supplier.count();
   return {
     totalProducts,
     totalStock: totalStock._sum.stock || 0,
     lowStockCount,
+    categoryCount,
+    supplierCount,
   };
 }
 
@@ -162,6 +199,18 @@ export async function addCategory(formData: FormData) {
   } catch (error) {
     console.error(error);
     return { success: false, error: "invalid data" };
+  }
+}
+
+export async function deleteCategory(formData: FormData) {
+  try {
+    const { id } = deleteSchema.parse({ id: formData.get("id") as string });
+    await prisma.category.delete({ where: { id: id } });
+    revalidatePath("/categories");
+    return { success: true };
+  } catch (error) {
+    console.error(error);
+    return { success: false, error: "failed to delete category" };
   }
 }
 
@@ -182,6 +231,22 @@ export async function addSupplier(formData: FormData) {
   } catch (error) {
     console.error(error);
     return { success: false, error: "Invalid data" };
+  }
+}
+
+export async function deleteSupplier(formData: FormData) {
+  try {
+    const { id } = deleteSchema.parse({ id: formData.get("id") as string });
+    await prisma.supplier.delete({ where: { id } });
+    revalidatePath("/suppliers");
+    return { success: true };
+  } catch (error) {
+    console.error("Error deleting supplier:", error);
+    return {
+      success: false,
+      error:
+        error instanceof Error ? error.message : "Failed to delete supplier",
+    };
   }
 }
 
