@@ -8,16 +8,13 @@ import {
   getLowStock,
   getProducts,
   getSuppliers,
-  addCategory,
-  deleteCategory,
-  addSupplier,
-  deleteSupplier,
 } from "../lib/actions/product-action";
 import { signOut } from "next-auth/react";
 import { toast, Toaster } from "sonner";
 import { Product, Category, Supplier, Analytics } from "@/types";
 import ProductPage from "./products/page";
 import CategoriesPage from "./categories/page";
+import SupplierPage from "./Supplier/page";
 
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState<string>("dashboard");
@@ -183,119 +180,10 @@ const Dashboard = () => {
         )}
 
         {activeTab === "suppliers" && (
-          <div>
-            <h2 className="text-3xl font-bold mb-6">Suppliers</h2>
-            <SupplierForm suppliers={suppliers} setSuppliers={setSuppliers} />
-            <div className="bg-white rounded-lg shadow overflow-x-auto">
-              <table className="min-w-full">
-                <thead>
-                  <tr className="bg-gray-100">
-                    <th className="p-4 text-left">Name</th>
-                    <th className="p-4 text-left">Contact</th>
-                    <th className="p-4 text-left">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {suppliers.map((supplier) => (
-                    <tr key={supplier.id} className="border-t">
-                      <td className="p-4">{supplier.name}</td>
-                      <td className="p-4">{supplier.contact || "-"}</td>
-                      <td className="p-4">
-                        <form
-                          action={async () => {
-                            const formData = new FormData();
-                            formData.append("id", supplier.id);
-                            const res = await deleteSupplier(formData);
-                            if (res.success) {
-                              toast.success("Supplier deleted");
-                              setSuppliers(
-                                suppliers.filter((s) => s.id !== supplier.id)
-                              );
-                            } else {
-                              toast.error(res.error);
-                            }
-                          }}
-                          className="inline"
-                        >
-                          <button
-                            type="submit"
-                            className="text-red-600 hover:underline"
-                          >
-                            Delete
-                          </button>
-                        </form>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
+          <SupplierPage suppliers={suppliers} setSuppliers={setSuppliers} />
         )}
       </div>
     </div>
-  );
-};
-
-const SupplierForm = ({
-  suppliers,
-  setSuppliers,
-}: {
-  suppliers: Supplier[];
-  setSuppliers: React.Dispatch<React.SetStateAction<Supplier[]>>;
-}) => {
-  const [name, setName] = useState("");
-  const [contact, setContact] = useState("");
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const formData = new FormData();
-    formData.append("name", name);
-    if (contact) formData.append("contact", contact);
-    const res = await addSupplier(formData);
-    if (res.success) {
-      toast.success("Supplier added");
-      setSuppliers([...suppliers, res.supplier]);
-      setName("");
-      setContact("");
-    } else {
-      toast.error(res.error);
-    }
-  };
-
-  return (
-    <form
-      onSubmit={handleSubmit}
-      className="mb-6 bg-white p-6 rounded-lg shadow"
-    >
-      <div className="mb-4">
-        <label className="block text-sm font-medium mb-1">Supplier Name</label>
-        <input
-          type="text"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          className="w-full p-2 border rounded"
-          required
-        />
-      </div>
-      <div className="mb-4">
-        <label className="block text-sm font-medium mb-1">
-          Contact (Optional)
-        </label>
-        <input
-          type="text"
-          value={contact}
-          onChange={(e) => setContact(e.target.value)}
-          className="w-full p-2 border rounded"
-        />
-      </div>
-      <button
-        type="submit"
-        className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-      >
-        Add Supplier
-      </button>
-    </form>
   );
 };
 
