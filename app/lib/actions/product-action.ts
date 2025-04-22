@@ -9,6 +9,7 @@ import {
 } from "../validation";
 import { revalidatePath } from "next/cache";
 import { put } from "@vercel/blob";
+import { Analytics, Category, Product, Supplier } from "@/types";
 
 // export async function getProducts() {
 //   return await prisma.product.findMany({
@@ -23,7 +24,7 @@ export async function getProducts(
   search?: string,
   categoryId?: string,
   supplierId?: string
-) {
+): Promise<Product[]> {
   return await prisma.product.findMany({
     where: {
       AND: [
@@ -40,7 +41,7 @@ export async function getProducts(
   });
 }
 
-export async function getProductbyId(id: string) {
+export async function getProductbyId(id: string): Promise<Product | null> {
   return await prisma.product.findUnique({
     where: { id: id },
     include: {
@@ -164,7 +165,7 @@ export async function deleteProduct(formData: FormData) {
   }
 }
 
-export async function getLowStock() {
+export async function getLowStock(): Promise<Product[]> {
   return await prisma.product.findMany({
     where: { stock: { lte: prisma.product.fields.lowStockThreshold } },
     include: { category: true, supplier: true },
@@ -172,7 +173,7 @@ export async function getLowStock() {
   });
 }
 
-export async function getAnalytics() {
+export async function getAnalytics(): Promise<Analytics> {
   const totalProducts = await prisma.product.count();
   const totalStock = await prisma.product.aggregate({ _sum: { stock: true } });
   const lowStockCount = await prisma.product.count({
@@ -189,7 +190,11 @@ export async function getAnalytics() {
   };
 }
 
-export async function addCategory(formData: FormData) {
+export async function addCategory(
+  formData: FormData
+): Promise<
+  { success: true; category: Category } | { success: false; error: string }
+> {
   try {
     const data = { name: formData.get("name") as string };
     const validatedData = categorySchema.parse(data);
@@ -214,11 +219,15 @@ export async function deleteCategory(formData: FormData) {
   }
 }
 
-export async function getCategories() {
+export async function getCategories(): Promise<Category[]> {
   return await prisma.category.findMany();
 }
 
-export async function addSupplier(formData: FormData) {
+export async function addSupplier(
+  formData: FormData
+): Promise<
+  { success: true; supplier: Supplier } | { success: false; error: string }
+> {
   try {
     const data = {
       name: formData.get("name") as string,
@@ -250,6 +259,6 @@ export async function deleteSupplier(formData: FormData) {
   }
 }
 
-export async function getSuppliers() {
+export async function getSuppliers(): Promise<Supplier[]> {
   return await prisma.supplier.findMany();
 }
