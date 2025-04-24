@@ -102,13 +102,19 @@ export async function createProduct(formData: FormData) {
   }
 }
 
-export async function updateProduct(id: string, formData: FormData) {
+export async function updateProduct(
+  formData: FormData
+): Promise<
+  { success: true; product: Product } | { success: false; error: string }
+> {
   try {
+    const id = formData.get("id") as string;
     const data = {
       name: formData.get("name") as string,
+      sku: formData.get("sku") as string,
       stock: Number(formData.get("stock")),
       price: Number(formData.get("price")),
-      lowStockThreshold: Number(formData.get("lowStockThreshold") || 10),
+      lowStockThreshold: Number(formData.get("lowStockThreshold")),
       categoryId: formData.get("categoryId") as string,
       supplierId: formData.get("supplierId") as string,
       imageUrl: undefined as string | undefined,
@@ -123,18 +129,19 @@ export async function updateProduct(id: string, formData: FormData) {
       data.imageUrl = url;
     }
 
-    const result = productSchema.omit({ sku: true }).safeParse(data);
+    const result = productSchema.safeParse(data);
 
     if (!result.success) {
-      return { success: false, errors: result.error.format() };
+      return { success: false, error: "xxx" };
     }
 
     const validated = result.data;
 
-    await prisma.product.update({
-      where: { id: id },
+    const product = await prisma.product.update({
+      where: { id },
       data: {
         name: validated.name,
+        sku: validated.sku,
         stock: validated.stock,
         price: validated.price,
         imageUrl: validated.imageUrl,
@@ -142,11 +149,15 @@ export async function updateProduct(id: string, formData: FormData) {
         category: { connect: { id: validated.categoryId } },
         supplier: { connect: { id: validated.supplierId } },
       },
+      include: {
+        category: true,
+        supplier: true,
+      },
     });
 
-    revalidatePath("/products");
+    revalidatePath("/");
 
-    return { success: true };
+    return { success: true, product };
   } catch (error) {
     console.error("Error updating product:", error);
     return { success: false, error: "Something went wrong." };
@@ -215,7 +226,10 @@ export async function deleteCategory(formData: FormData) {
     return { success: true };
   } catch (error) {
     console.error(error);
-    return { success: false, error: "failed to delete category" };
+    return {
+      success: false,
+      error: "Failed to delete category because a product with category exist",
+    };
   }
 }
 

@@ -94,7 +94,9 @@ const ProductPage = ({
                     <Image
                       src={product.imageUrl}
                       alt={product.name}
-                      className="w-12 h-12 object-cover rounded"
+                      width={50}
+                      height={50}
+                      className=" object-cover rounded"
                     />
                   )}
                 </td>

@@ -1,20 +1,20 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+// import { useRouter } from "next/navigation";
 import {
   getAnalytics,
   getCategories,
   getLowStock,
   getProducts,
   getSuppliers,
-} from "../lib/actions/product-action";
+} from "../../lib/actions/product-action";
 import { signOut } from "next-auth/react";
 import { toast, Toaster } from "sonner";
 import { Product, Category, Supplier, Analytics } from "@/types";
-import ProductPage from "./products/page";
-import CategoriesPage from "./categories/page";
-import SupplierPage from "./Supplier/page";
+import ProductPage from "../../../components/products/page";
+import CategoriesPage from "../../../components/categories/page";
+import SupplierPage from "../../../components/Supplier/page";
 
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState<string>("dashboard");
@@ -26,7 +26,7 @@ const Dashboard = () => {
   const [search, setSearch] = useState<string>("");
   const [categoryFilter, setCategoryFilter] = useState<string>("");
   const [supplierFilter, setSupplierFilter] = useState<string>("");
-  const router = useRouter();
+  // const router = useRouter();
 
   useEffect(() => {
     const fetchData = async () => {

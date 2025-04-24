@@ -16,6 +16,7 @@
     "@prisma/client": "^6.5.0",
     "@vercel/blob": "^1.0.0",
     "bcrypt-ts-edge": "^3.0.1",
+    "lucide-react": "^0.503.0",
     "next": "15.2.4",
     "next-auth": "^5.0.0-beta.25",
     "react": "^19.0.0",
