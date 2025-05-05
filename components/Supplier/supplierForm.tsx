@@ -1,7 +1,8 @@
 import { addSupplier } from "@/app/lib/actions/product-action";
 import { Supplier } from "@/types";
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { toast } from "sonner";
+import SubmitButton from "../button";
 
 const SupplierForm = ({
   suppliers,
@@ -12,21 +13,24 @@ const SupplierForm = ({
 }) => {
   const [name, setName] = useState("");
   const [contact, setContact] = useState("");
+  const [isPending, startTransition] = useTransition();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const formData = new FormData();
     formData.append("name", name);
-    if (contact) formData.append("contact", contact);
-    const res = await addSupplier(formData);
-    if (res.success) {
-      toast.success("Supplier added");
-      setSuppliers([...suppliers, res.supplier]);
-      setName("");
-      setContact("");
-    } else {
-      toast.error(res.error);
-    }
+    startTransition(async () => {
+      if (contact) formData.append("contact", contact);
+      const res = await addSupplier(formData);
+      if (res.success) {
+        toast.success("Supplier added");
+        setSuppliers([...suppliers, res.supplier]);
+        setName("");
+        setContact("");
+      } else {
+        toast.error(res.error);
+      }
+    });
   };
 
   return (
@@ -55,12 +59,13 @@ const SupplierForm = ({
           className="w-full p-2 border rounded"
         />
       </div>
-      <button
+      <SubmitButton isPending={isPending} text="Add Supplier" />
+      {/* <button
         type="submit"
         className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
       >
         Add Supplier
-      </button>
+      </button> */}
     </form>
   );
 };

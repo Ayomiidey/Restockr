@@ -4,7 +4,7 @@ import { Category } from "@/types";
 import { useState } from "react";
 import { toast } from "sonner";
 import { useTransition } from "react";
-import { Loader } from "lucide-react";
+import SubmitButton from "../button";
 
 const CategoryForm = ({
   categories,
@@ -51,22 +51,7 @@ const CategoryForm = ({
         />
       </div>
 
-      <button
-        type="submit"
-        className={`flex items-center justify-center gap-2 bg-blue-600 text-white px-4 py-2 rounded w-full sm:w-auto ${
-          isPending ? "bg-blue-400 cursor-not-allowed" : "hover:bg-blue-700"
-        }`}
-        disabled={isPending}
-      >
-        {isPending ? (
-          <>
-            <Loader className="animate-spin h-4 w-4" />
-            <span>Processing...</span>
-          </>
-        ) : (
-          "Add Category"
-        )}
-      </button>
+      <SubmitButton isPending={isPending} text="Add Category" />
     </form>
   );
 };
