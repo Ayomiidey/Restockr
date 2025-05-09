@@ -97,7 +97,7 @@ const Dashboard = () => {
           ))}
           <button
             className="w-full text-left p-4 hover:bg-gray-100 text-red-600"
-            onClick={() => signOut({ callbackUrl: "/login" })}
+            onClick={() => signOut({ callbackUrl: "/" })}
           >
             Logout
           </button>

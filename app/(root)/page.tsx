@@ -1,31 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import {
-  BarChart3,
-  Box,
-  ChevronRight,
-  Key,
-  Lock,
-  ShieldCheck,
-  User,
-} from "lucide-react";
+import { BarChart3, Box, Key, ShieldCheck } from "lucide-react";
+import SignInForm from "../(auth)/sign-in/page";
+import SignUpForm from "../(auth)/sign-up/page";
 
 export default function HomePage() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [isLoginOpen, setIsLoginOpen] = useState(false);
-
-  const handleLogin = () => {
-    // In a real app, this would handle authentication and redirect to dashboard
-    console.log("Login attempted with:", email, password);
-    alert("Login successful! Redirecting to dashboard...");
-    // Redirect would happen here with Next.js router
-  };
+  const [isSignUpOpen, setIsSignUpOpen] = useState(false);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
-      {/* Navigation */}
       <nav className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
@@ -42,7 +27,10 @@ export default function HomePage() {
               >
                 Login
               </button>
-              <button className="px-4 py-2 rounded-md text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <button
+                onClick={() => setIsSignUpOpen(true)}
+                className="px-4 py-2 rounded-md text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
                 Sign Up
               </button>
             </div>
@@ -50,67 +38,8 @@ export default function HomePage() {
         </div>
       </nav>
 
-      {/* Login Modal */}
-      {isLoginOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-8 max-w-md w-full">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-bold text-gray-900">
-                Login to SmartInventory
-              </h2>
-              <button
-                onClick={() => setIsLoginOpen(false)}
-                className="text-gray-400 hover:text-gray-500"
-              >
-                ✕
-              </button>
-            </div>
-            <div>
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Email
-                </label>
-                <div className="relative">
-                  <User className="h-5 w-5 text-gray-400 absolute left-3 top-3" />
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="pl-10 pr-3 py-2 w-full border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="you@example.com"
-                  />
-                </div>
-              </div>
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Password
-                </label>
-                <div className="relative">
-                  <Lock className="h-5 w-5 text-gray-400 absolute left-3 top-3" />
-                  <input
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="pl-10 pr-3 py-2 w-full border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="••••••••"
-                  />
-                </div>
-              </div>
-              <button
-                onClick={handleLogin}
-                className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 flex justify-center items-center"
-              >
-                Login <ChevronRight className="ml-2 h-4 w-4" />
-              </button>
-            </div>
-            <div className="mt-4 text-center text-sm text-gray-500">
-              <a href="#" className="text-blue-600 hover:underline">
-                Forgot password?
-              </a>
-            </div>
-          </div>
-        </div>
-      )}
+      {isLoginOpen && <SignInForm setIsLoginOpen={setIsLoginOpen} />}
+      {isSignUpOpen && <SignUpForm setIsSignUpOpen={setIsSignUpOpen} />}
 
       {/* Hero Section */}
       <div className="relative overflow-hidden">
