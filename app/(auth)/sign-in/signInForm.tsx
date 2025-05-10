@@ -5,7 +5,7 @@ import { User, Lock, ChevronRight } from "lucide-react";
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
 import { signIn } from "next-auth/react";
-import { redirect } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 // import { signIn } from "@/auth";
 const SignInForm = () => {
@@ -14,6 +14,7 @@ const SignInForm = () => {
     message: "",
   });
 
+  const router = useRouter();
   const LoginButton = () => {
     const { pending } = useFormStatus();
     return (
@@ -36,7 +37,7 @@ const SignInForm = () => {
             Login to SmartInventory
           </h2>
           <button
-            onClick={() => redirect("/")}
+            onClick={() => router.push("/")}
             className="text-gray-400 hover:text-gray-500"
           >
             ✕

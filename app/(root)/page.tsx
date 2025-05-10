@@ -1,16 +1,12 @@
 "use client";
 
-import { useState } from "react";
 import { BarChart3, Box, Key, ShieldCheck } from "lucide-react";
-// import SignInForm from "../(auth)/sign-in/page";
-import SignUpForm from "../(auth)/sign-up/page";
-import SignInPage from "../(auth)/sign-in/page";
+
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export default function HomePage() {
-  const [isLoginOpen, setIsLoginOpen] = useState(false);
-  const [isSignUpOpen, setIsSignUpOpen] = useState(false);
-
+  const router = useRouter();
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
       <nav className="bg-white shadow-sm">
@@ -23,15 +19,19 @@ export default function HomePage() {
               </span>
             </div>
             <div className="flex items-center space-x-4">
-              <button className="px-4 py-2 rounded-md text-sm font-medium text-blue-600 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                <Link href="/sign-in">Login</Link>
-              </button>
-              <button
-                onClick={() => setIsSignUpOpen(true)}
+              <Link
+                href="/sign-in"
+                className="px-4 py-2 rounded-md text-sm font-medium text-blue-600 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                Login
+              </Link>
+
+              <Link
+                href="/sign-up"
                 className="px-4 py-2 rounded-md text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
-                <Link href="/sign-up"> Sign Up</Link>
-              </button>
+                Sign Up
+              </Link>
             </div>
           </div>
         </div>
@@ -53,7 +53,7 @@ export default function HomePage() {
               </p>
               <div className="mt-8 flex space-x-4">
                 <button
-                  onClick={() => setIsLoginOpen(true)}
+                  onClick={() => router.push("/sign-in")}
                   className="px-8 py-3 rounded-md text-base font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   Get Started
@@ -222,7 +222,7 @@ export default function HomePage() {
           </p>
           <div className="mt-8">
             <button
-              onClick={() => setIsLoginOpen(true)}
+              onClick={() => router.push("/sign-in")}
               className="px-8 py-3 rounded-md text-base font-medium text-blue-600 bg-white hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-white"
             >
               Start Free Trial
