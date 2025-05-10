@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import { BarChart3, Box, Key, ShieldCheck } from "lucide-react";
-import SignInForm from "../(auth)/sign-in/page";
+// import SignInForm from "../(auth)/sign-in/page";
 import SignUpForm from "../(auth)/sign-up/page";
+import SignInPage from "../(auth)/sign-in/page";
 
 export default function HomePage() {
   const [isLoginOpen, setIsLoginOpen] = useState(false);
@@ -38,7 +39,8 @@ export default function HomePage() {
         </div>
       </nav>
 
-      {isLoginOpen && <SignInForm setIsLoginOpen={setIsLoginOpen} />}
+      {/* {isLoginOpen && <SignInForm setIsLoginOpen={setIsLoginOpen} />} */}
+      {isLoginOpen && <SignInPage setIsLoginOpen={setIsLoginOpen} />}
       {isSignUpOpen && <SignUpForm setIsSignUpOpen={setIsSignUpOpen} />}
 
       {/* Hero Section */}
