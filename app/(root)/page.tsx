@@ -5,6 +5,7 @@ import { BarChart3, Box, Key, ShieldCheck } from "lucide-react";
 // import SignInForm from "../(auth)/sign-in/page";
 import SignUpForm from "../(auth)/sign-up/page";
 import SignInPage from "../(auth)/sign-in/page";
+import Link from "next/link";
 
 export default function HomePage() {
   const [isLoginOpen, setIsLoginOpen] = useState(false);
@@ -22,26 +23,19 @@ export default function HomePage() {
               </span>
             </div>
             <div className="flex items-center space-x-4">
-              <button
-                onClick={() => setIsLoginOpen(true)}
-                className="px-4 py-2 rounded-md text-sm font-medium text-blue-600 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                Login
+              <button className="px-4 py-2 rounded-md text-sm font-medium text-blue-600 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <Link href="/sign-in">Login</Link>
               </button>
               <button
                 onClick={() => setIsSignUpOpen(true)}
                 className="px-4 py-2 rounded-md text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
-                Sign Up
+                <Link href="/sign-up"> Sign Up</Link>
               </button>
             </div>
           </div>
         </div>
       </nav>
-
-      {/* {isLoginOpen && <SignInForm setIsLoginOpen={setIsLoginOpen} />} */}
-      {isLoginOpen && <SignInPage setIsLoginOpen={setIsLoginOpen} />}
-      {isSignUpOpen && <SignUpForm setIsSignUpOpen={setIsSignUpOpen} />}
 
       {/* Hero Section */}
       <div className="relative overflow-hidden">

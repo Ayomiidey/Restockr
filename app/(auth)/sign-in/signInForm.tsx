@@ -2,16 +2,13 @@
 
 import { signInWithCredential } from "@/app/lib/actions/user-action";
 import { User, Lock, ChevronRight } from "lucide-react";
-import { Dispatch, SetStateAction, useActionState } from "react";
+import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
 import { signIn } from "next-auth/react";
+import { redirect } from "next/navigation";
 
 // import { signIn } from "@/auth";
-const SignInForm = ({
-  setIsLoginOpen,
-}: {
-  setIsLoginOpen: Dispatch<SetStateAction<boolean>>;
-}) => {
+const SignInForm = () => {
   const [data, action] = useActionState(signInWithCredential, {
     success: false,
     message: "",
@@ -39,7 +36,7 @@ const SignInForm = ({
             Login to SmartInventory
           </h2>
           <button
-            onClick={() => setIsLoginOpen(false)}
+            onClick={() => redirect("/")}
             className="text-gray-400 hover:text-gray-500"
           >
             ✕
