@@ -10,6 +10,7 @@ import {
 import { revalidatePath } from "next/cache";
 import { put } from "@vercel/blob";
 import { Analytics, Category, Product, Supplier } from "@/types";
+import { auth } from "@/auth";
 
 // export async function getProducts() {
 //   return await prisma.product.findMany({
@@ -25,6 +26,10 @@ export async function getProducts(
   categoryId?: string,
   supplierId?: string
 ): Promise<Product[]> {
+  const session = await auth();
+  if (!session?.user.id) {
+    throw new Error("Unauthorized");
+  }
   return await prisma.product.findMany({
     where: {
       AND: [
@@ -42,8 +47,12 @@ export async function getProducts(
 }
 
 export async function getProductbyId(id: string): Promise<Product | null> {
+  const session = await auth();
+  if (!session?.user?.id) {
+    throw new Error("Unauthorized");
+  }
   return await prisma.product.findUnique({
-    where: { id: id },
+    where: { id: id, userId: session.user.id },
     include: {
       category: true,
       supplier: true,
@@ -53,6 +62,11 @@ export async function getProductbyId(id: string): Promise<Product | null> {
 
 export async function createProduct(formData: FormData) {
   try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return { success: false, error: "Unauthorized" };
+    }
+
     const data = {
       name: formData.get("name") as string,
       sku: formData.get("sku") as string,
@@ -91,8 +105,10 @@ export async function createProduct(formData: FormData) {
         category: { connect: { id: validatedData.categoryId } },
         supplier: { connect: { id: validatedData.supplierId } },
         imageUrl: validatedData.imageUrl,
+        userId: session.user.id,
       },
     });
+
     revalidatePath("/products");
 
     return { success: true };
@@ -108,6 +124,10 @@ export async function updateProduct(
   { success: true; product: Product } | { success: false; error: string }
 > {
   try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return { success: false, error: "Unauthorized" };
+    }
     const id = formData.get("id") as string;
     const data = {
       name: formData.get("name") as string,
@@ -132,13 +152,13 @@ export async function updateProduct(
     const result = productSchema.safeParse(data);
 
     if (!result.success) {
-      return { success: false, error: "xxx" };
+      return { success: false, error: "Validation Failed" };
     }
 
     const validated = result.data;
 
     const product = await prisma.product.update({
-      where: { id },
+      where: { id, userId: session.user.id },
       data: {
         name: validated.name,
         sku: validated.sku,
@@ -166,8 +186,12 @@ export async function updateProduct(
 
 export async function deleteProduct(formData: FormData) {
   try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return { success: false, error: "Unauthorized" };
+    }
     const { id } = deleteSchema.parse({ id: formData.get("id") as string });
-    await prisma.product.delete({ where: { id: id } });
+    await prisma.product.delete({ where: { id: id, userId: session.user.id } });
     revalidatePath("/");
     return { success: true };
   } catch (error) {
@@ -177,21 +201,45 @@ export async function deleteProduct(formData: FormData) {
 }
 
 export async function getLowStock(): Promise<Product[]> {
+  const session = await auth();
+  if (!session?.user?.id) {
+    throw new Error("Unauthorized");
+  }
   return await prisma.product.findMany({
-    where: { stock: { lte: prisma.product.fields.lowStockThreshold } },
+    where: {
+      userId: session.user.id,
+      stock: { lte: prisma.product.fields.lowStockThreshold },
+    },
     include: { category: true, supplier: true },
     orderBy: { stock: "asc" },
   });
 }
-
 export async function getAnalytics(): Promise<Analytics> {
-  const totalProducts = await prisma.product.count();
-  const totalStock = await prisma.product.aggregate({ _sum: { stock: true } });
-  const lowStockCount = await prisma.product.count({
-    where: { stock: { lte: prisma.product.fields.lowStockThreshold } },
+  const session = await auth();
+  if (!session?.user?.id) {
+    throw new Error("Unauthorized");
+  }
+
+  const totalProducts = await prisma.product.count({
+    where: { userId: session.user.id },
   });
-  const categoryCount = await prisma.category.count();
-  const supplierCount = await prisma.supplier.count();
+  const totalStock = await prisma.product.aggregate({
+    where: { userId: session.user.id },
+    _sum: { stock: true },
+  });
+  const lowStockCount = await prisma.product.count({
+    where: {
+      userId: session.user.id,
+      stock: { lte: prisma.product.fields.lowStockThreshold },
+    },
+  });
+  const categoryCount = await prisma.category.count({
+    where: { userId: session.user.id },
+  });
+  const supplierCount = await prisma.supplier.count({
+    where: { userId: session.user.id },
+  });
+
   return {
     totalProducts,
     totalStock: totalStock._sum.stock || 0,
@@ -207,34 +255,63 @@ export async function addCategory(
   { success: true; category: Category } | { success: false; error: string }
 > {
   try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return { success: false, error: "Unauthorized" };
+    }
+
     const data = { name: formData.get("name") as string };
     const validatedData = categorySchema.parse(data);
-    const category = await prisma.category.create({ data: validatedData });
+    const category = await prisma.category.create({
+      data: {
+        ...validatedData,
+        userId: session.user.id,
+      },
+    });
     revalidatePath("/");
     return { success: true, category };
   } catch (error) {
     console.error(error);
-    return { success: false, error: "invalid data" };
+    return { success: false, error: "Invalid data" };
   }
 }
 
 export async function deleteCategory(formData: FormData) {
   try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return { success: false, error: "Unauthorized" };
+    }
+
     const { id } = deleteSchema.parse({ id: formData.get("id") as string });
-    await prisma.category.delete({ where: { id: id } });
+    await prisma.category.delete({
+      where: {
+        id,
+        userId: session.user.id,
+      },
+    });
     revalidatePath("/categories");
     return { success: true };
   } catch (error) {
     console.error(error);
     return {
       success: false,
-      error: "Failed to delete category because a product with category exist",
+      error: "Failed to delete category because a product with category exists",
     };
   }
 }
 
 export async function getCategories(): Promise<Category[]> {
-  return await prisma.category.findMany();
+  const session = await auth();
+  if (!session?.user?.id) {
+    throw new Error("Unauthorized");
+  }
+
+  return await prisma.category.findMany({
+    where: {
+      userId: session.user.id,
+    },
+  });
 }
 
 export async function addSupplier(
@@ -243,12 +320,22 @@ export async function addSupplier(
   { success: true; supplier: Supplier } | { success: false; error: string }
 > {
   try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return { success: false, error: "Unauthorized" };
+    }
+
     const data = {
       name: formData.get("name") as string,
       contact: formData.get("contact") as string | undefined,
     };
     const validatedData = supplierSchema.parse(data);
-    const supplier = await prisma.supplier.create({ data: validatedData });
+    const supplier = await prisma.supplier.create({
+      data: {
+        ...validatedData,
+        userId: session.user.id,
+      },
+    });
     revalidatePath("/");
     return { success: true, supplier };
   } catch (error) {
@@ -259,8 +346,18 @@ export async function addSupplier(
 
 export async function deleteSupplier(formData: FormData) {
   try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return { success: false, error: "Unauthorized" };
+    }
+
     const { id } = deleteSchema.parse({ id: formData.get("id") as string });
-    await prisma.supplier.delete({ where: { id } });
+    await prisma.supplier.delete({
+      where: {
+        id,
+        userId: session.user.id,
+      },
+    });
     revalidatePath("/suppliers");
     return { success: true };
   } catch (error) {
@@ -274,5 +371,14 @@ export async function deleteSupplier(formData: FormData) {
 }
 
 export async function getSuppliers(): Promise<Supplier[]> {
-  return await prisma.supplier.findMany();
+  const session = await auth();
+  if (!session?.user?.id) {
+    throw new Error("Unauthorized");
+  }
+
+  return await prisma.supplier.findMany({
+    where: {
+      userId: session.user.id, // Filter by user
+    },
+  });
 }
